@@ -1,11 +1,11 @@
-from typing import Iterator, List, Dict
-import gzip
-import os
-from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
+from typing import Iterator, List, Dict
+import gzip
+import os
+from collections import defaultdict
 
 # 1. БАЗОВЫЕ КЛАССЫ
 
@@ -16,17 +16,15 @@ class Record:
         self.sequence = sequence
         self.quality = quality
 
-# 2. КЛАСС ДЛЯ ЧТЕНИЯ FASTQ + генераторы
+# 2. КЛАСС ДЛЯ ЧТЕНИЯ FASTQ (+ генераторы)
 
 class FastqReader:
-    # Инициализация reader’а (учёт .gz)
     def __init__(self, filename: str):
         self.filename = filename
         self.file_handle = None
         self._is_gzipped = filename.endswith('.gz')
 
     def __enter__(self):
-        # Открытие файла в текстовом режиме
         if self._is_gzipped:
             self.file_handle = gzip.open(self.filename, 'rt')
         else:
@@ -34,35 +32,31 @@ class FastqReader:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # Закрытие файла
         self.close()
 
     def read(self) -> Iterator[Record]:
-        # Генератор чтения: header, sequence, +, quality
         if self.file_handle is None:
             raise RuntimeError("Use 'with FastqReader(...)'")
         while True:
             header = self.file_handle.readline().strip()
             if not header:
                 break
-            seq = self.file_handle.readline().strip()
-            self.file_handle.readline()  # плюс
-            qual = self.file_handle.readline().strip()
+            sequence = self.file_handle.readline().strip()
+            self.file_handle.readline()  # плюс-строка
+            quality = self.file_handle.readline().strip()
             seq_id = header[1:] if header.startswith('@') else header
-            yield Record(seq_id, seq, qual)
+            yield Record(seq_id, sequence, quality)
 
     def close(self):
-        # Закрытие дескриптора
         if self.file_handle:
             self.file_handle.close()
             self.file_handle = None
 
     @staticmethod
-    def _quality_string_to_scores(qs: str, phred_offset: int = 33) -> List[int]:
-        # ASCII → Phred scores
-        return [ord(c) - phred_offset for c in qs]
+    def quality_to_scores(quality_str: str, phred_offset: int = 33) -> List[int]:
+        return [ord(char) - phred_offset for char in quality_str]
 
-# 3. АНАЛИЗАТОР FASTQ (статистика)
+# 3. АНАЛИЗАТОР FASTQ (статистика и графики)
 
 class FastqAnalyzer:
     def __init__(self, filename: str, graphs_dir: str):
@@ -70,188 +64,226 @@ class FastqAnalyzer:
         self.graphs_dir = graphs_dir
 
     def get_sequence_count(self) -> int:
-        # Количество прочтений
-        cnt = 0
+        count = 0
         with self.reader:
             for _ in self.reader.read():
-                cnt += 1
-        return cnt
+                count += 1
+        return count
 
     def get_average_sequence_length(self) -> float:
-        # Средняя длина чтений
-        total, cnt = 0, 0
+        total_length = 0
+        count = 0
         with self.reader:
-            for r in self.reader.read():
-                total += len(r.sequence)
-                cnt += 1
-        return total / cnt if cnt else 0.0
+            for record in self.reader.read():
+                total_length += len(record.sequence)
+                count += 1
+        return total_length / count if count > 0 else 0.0
 
     def get_sequence_length_distribution(self) -> Dict[int, int]:
-        # Распределение длин
-        dist = defaultdict(int)
+        length_dist = defaultdict(int)
         with self.reader:
-            for r in self.reader.read():
-                dist[len(r.sequence)] += 1
-        return dict(dist)
+            for record in self.reader.read():
+                length_dist[len(record.sequence)] += 1
+        return dict(length_dist)
 
     def calculate_per_base_quality(self):
-        # Сбор Phred баллов по позициям
-        pos_q = defaultdict(list)
+        position_qualities = defaultdict(list)
         with self.reader:
-            for r in self.reader.read():
-                scores = FastqReader._quality_string_to_scores(r.quality)
-                for i, s in enumerate(scores):
-                    pos_q[i].append(s)
-        max_i = max(pos_q.keys()) if pos_q else -1
-        mean_q, all_q = [], []
-        for i in range(max_i + 1):
-            qs = pos_q[i]
-            mean_q.append(np.mean(qs) if qs else 0)
-            all_q.append(qs)
-        return mean_q, all_q
+            for record in self.reader.read():
+                qualities = FastqReader.quality_to_scores(record.quality)
+                for pos, qual in enumerate(qualities):
+                    position_qualities[pos].append(qual)
+        max_pos = max(position_qualities.keys()) if position_qualities else 0
+        mean_qualities, all_qualities = [], []
+        for pos in range(max_pos + 1):
+            quals = position_qualities[pos]
+            mean_qualities.append(np.mean(quals) if quals else 0)
+            all_qualities.append(quals)
+        return mean_qualities, all_qualities
 
     def calculate_per_base_content(self) -> Dict[str, List[float]]:
-        # Процент ACGT по позициям
-        pos_c = defaultdict(lambda: {'A':0,'C':0,'G':0,'T':0,'total':0})
+        position_counts = defaultdict(lambda: {'A': 0, 'C': 0, 'G': 0, 'T': 0, 'total': 0})
         with self.reader:
-            for r in self.reader.read():
-                for i, b in enumerate(r.sequence.upper()):
-                    if b in 'ACGT':
-                        pos_c[i][b] += 1
-                        pos_c[i]['total'] += 1
-        max_i = max(pos_c.keys()) if pos_c else -1
-        res = {b: [] for b in 'ACGT'}
-        for i in range(max_i + 1):
-            cnt = pos_c[i]
-            tot = cnt['total']
-            for b in 'ACGT':
-                res[b].append((cnt[b] / tot)*100 if tot else 0)
-        return res
+            for record in self.reader.read():
+                for pos, base in enumerate(record.sequence.upper()):
+                    if base in 'ACGTN':
+                        position_counts[pos][base] += 1
+                        position_counts[pos]['total'] += 1
+        max_pos = max(position_counts.keys()) if position_counts else 0
+        result = {'A': [], 'C': [], 'G': [], 'T': []}
+        for pos in range(max_pos + 1):
+            counts = position_counts[pos]
+            total = counts['total']
+            for base in ['A', 'C', 'G', 'T']:
+                result[base].append((counts[base] / total) * 100 if total > 0 else 0)
+        return result
 
     # 4. ГРАФИКИ
 
     def plot_per_base_quality_matplotlib(self):
-        # 4.1 Per Base Sequence Quality (matplotlib)
-        mean_q, all_q = self.calculate_per_base_quality()
-        if not mean_q:
-            print("Нет данных")
+        # Per Base Sequence Quality (matplotlib)
+        mean_qualities, all_qualities = self.calculate_per_base_quality()
+        if not mean_qualities:
+            print("Нет данных для графика")
             return
-        pos = list(range(1, len(mean_q)+1))
-        perc = []
-        for qs in all_q:
-            if qs:
-                perc.append({
-                    'q25': np.percentile(qs,25),
-                    'med': np.median(qs),
-                    'q75': np.percentile(qs,75),
-                    'q10': np.percentile(qs,10),
-                    'q90': np.percentile(qs,90),
-                    'mean': np.mean(qs)})
+        positions = list(range(1, len(mean_qualities) + 1))
+        percentiles = []
+        for quals in all_qualities:
+            if quals:
+                percentiles.append({
+                    'q25': np.percentile(quals, 25),
+                    'median': np.median(quals),
+                    'q75': np.percentile(quals, 75),
+                    'q10': np.percentile(quals, 10),
+                    'q90': np.percentile(quals, 90),
+                    'mean': np.mean(quals)
+                })
             else:
-                perc.append({k:0 for k in ['q25','med','q75','q10','q90','mean']})
-        fig, ax = plt.subplots(figsize=(14,6))
-        ax.axhspan(28,42,facecolor='green',alpha=0.1)
-        ax.axhspan(20,28,facecolor='orange',alpha=0.1)
-        ax.axhspan(0,20,facecolor='red',alpha=0.1)
-        w = 0.8
-        for i, p in zip(pos, perc):
-            ax.add_patch(plt.Rectangle((i-w/2,p['q25']),w,p['q75']-p['q25'],facecolor='yellow',edgecolor='black'))
-            ax.plot([i-w/2,i+w/2],[p['med'],p['med']],'r-')
-            ax.plot([i,i],[p['q75'],p['q90']],'k-')
-            ax.plot([i,i],[p['q25'],p['q10']],'k-')
-        ax.plot(pos,[p['mean'] for p in perc],'b-',label='Mean')
-        ax.set_xlabel('Position (bp)'); ax.set_ylabel('Phred score'); ax.set_ylim(0,42)
-        ax.set_title('Per Base Sequence Quality'); ax.legend(); plt.tight_layout()
-        path = os.path.join(self.graphs_dir,'per_base_quality_matplotlib.png')
-        plt.savefig(path,dpi=300); plt.close(); print(f"Saved: {path}")
+                percentiles.append({k: 0 for k in ['q25', 'median', 'q75', 'q10', 'q90', 'mean']})
+        fig, ax = plt.subplots(figsize=(14, 6))
+        ax.axhspan(28, 42, facecolor='green', alpha=0.1)
+        ax.axhspan(20, 28, facecolor='orange', alpha=0.1)
+        ax.axhspan(0, 20, facecolor='red', alpha=0.1)
+        box_width = 0.8
+        for pos, perc in zip(positions, percentiles):
+            ax.add_patch(plt.Rectangle((pos - box_width/2, perc['q25']),
+                                      box_width, perc['q75'] - perc['q25'],
+                                      facecolor='yellow', edgecolor='black', linewidth=0.5))
+            ax.plot([pos - box_width/2, pos + box_width/2],
+                   [perc['median'], perc['median']], 'r-', linewidth=1)
+            ax.plot([pos, pos], [perc['q75'], perc['q90']], 'k-', linewidth=0.5)
+            ax.plot([pos, pos], [perc['q25'], perc['q10']], 'k-', linewidth=0.5)
+        ax.plot(positions, [p['mean'] for p in percentiles], 'b-', linewidth=1, label='Среднее')
+        ax.set_xlabel('Позиция в прочтении (bp)', fontsize=12)
+        ax.set_ylabel('Phred качество', fontsize=12)
+        ax.set_title('Per Base Sequence Quality', fontsize=14, fontweight='bold')
+        ax.set_ylim(0, 42)
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+        plt.tight_layout()
+        output_path = os.path.join(self.graphs_dir, 'per_base_quality_matplotlib.png')
+        plt.savefig(output_path, dpi=300)
+        plt.close()
+        print(f"График сохранен: {output_path}")
 
     def plot_per_base_quality_seaborn(self):
-        # 4.2 Per Base Sequence Quality (seaborn)
-        mean_q, _ = self.calculate_per_base_quality()
-        if not mean_q:
-            print("Нет данных"); return
-        pos = list(range(1,len(mean_q)+1))
-        sns.set_style('whitegrid')
-        fig, ax = plt.subplots(figsize=(14,6))
-        ax.axhspan(28,42,facecolor='green',alpha=0.1)
-        ax.axhspan(20,28,facecolor='orange',alpha=0.1)
-        ax.axhspan(0,20,facecolor='red',alpha=0.1)
-        ax.plot(pos, mean_q, color='blue',linewidth=2, label='Mean')
-        ax.set_xlabel('Position (bp)'); ax.set_ylabel('Phred score')
-        ax.set_title('Per Base Sequence Quality (Seaborn)'); ax.set_ylim(0,42)
-        ax.legend(); plt.tight_layout()
-        path = os.path.join(self.graphs_dir,'per_base_quality_seaborn.png')
-        plt.savefig(path,dpi=300); plt.close(); print(f"Saved: {path}")
+        # Per Base Sequence Quality (seaborn)
+        mean_qualities, _ = self.calculate_per_base_quality()
+        if not mean_qualities:
+            print("Нет данных для графика")
+            return
+        positions = list(range(1, len(mean_qualities) + 1))
+        sns.set_style("whitegrid")
+        fig, ax = plt.subplots(figsize=(14, 6))
+        ax.axhspan(28, 42, facecolor='green', alpha=0.1)
+        ax.axhspan(20, 28, facecolor='orange', alpha=0.1)
+        ax.axhspan(0, 20, facecolor='red', alpha=0.1)
+        ax.plot(positions, mean_qualities, linewidth=2, color='blue', label='Среднее качество')
+        ax.set_xlabel('Позиция в прочтении (bp)', fontsize=12)
+        ax.set_ylabel('Phred качество', fontsize=12)
+        ax.set_title('Per Base Sequence Quality (Seaborn)', fontsize=14, fontweight='bold')
+        ax.set_ylim(0, 42)
+        ax.legend()
+        plt.tight_layout()
+        output_path = os.path.join(self.graphs_dir, 'per_base_quality_seaborn.png')
+        plt.savefig(output_path, dpi=300)
+        plt.close()
+        print(f"График сохранен: {output_path}")
 
     def plot_per_base_quality_plotly(self):
-        # 4.3 Per Base Sequence Quality (interactive Plotly)
-        mean_q, all_q = self.calculate_per_base_quality()
-        if not mean_q:
-            print("Нет данных"); return
-        pos = list(range(1,len(mean_q)+1))
-        med = [np.median(q) if q else 0 for q in all_q]
-        q25 = [np.percentile(q,25) if q else 0 for q in all_q]
-        q75 = [np.percentile(q,75) if q else 0 for q in all_q]
+        # Per Base Sequence Quality (Plotly interactive)
+        mean_qualities, all_qualities = self.calculate_per_base_quality()
+        if not mean_qualities:
+            print("Нет данных для графика")
+            return
+        positions = list(range(1, len(mean_qualities) + 1))
+        medians = [np.median(q) if q else 0 for q in all_qualities]
+        q25 = [np.percentile(q, 25) if q else 0 for q in all_qualities]
+        q75 = [np.percentile(q, 75) if q else 0 for q in all_qualities]
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=pos,y=mean_q,mode='lines',name='Mean'))
-        fig.add_trace(go.Scatter(x=pos,y=med,mode='lines',name='Median'))
-        fig.add_trace(go.Scatter(x=pos+pos[::-1],y=q75+q25[::-1],fill='toself',fillcolor='rgba(255,255,0,0.3)',name='IQR'))
-        fig.add_hrect(y0=28,y1=42,fillcolor='green',opacity=0.1)
-        fig.add_hrect(y0=20,y1=28,fillcolor='orange',opacity=0.1)
-        fig.add_hrect(y0=0,y1=20,fillcolor='red',opacity=0.1)
-        fig.update_layout(title='Per Base Sequence Quality (Interactive)',xaxis_title='Position (bp)',yaxis_title='Phred score',yaxis=dict(range=[0,42]))
-        path = os.path.join(self.graphs_dir,'per_base_quality_plotly.html')
-        fig.write_html(path); print(f"Saved: {path}")
+        fig.add_trace(go.Scatter(x=positions, y=mean_qualities, mode='lines', name='Среднее',
+                                line=dict(color='blue', width=2)))
+        fig.add_trace(go.Scatter(x=positions, y=medians, mode='lines', name='Медиана',
+                                line=dict(color='red', width=2)))
+        fig.add_trace(go.Scatter(x=positions + positions[::-1], y=q75 + q25[::-1],
+                                fill='toself', fillcolor='rgba(255, 255, 0, 0.3)',
+                                line=dict(color='rgba(255,255,255,0)'), name='IQR (25-75%)'))
+        fig.add_hrect(y0=28, y1=42, fillcolor="green", opacity=0.1, line_width=0)
+        fig.add_hrect(y0=20, y1=28, fillcolor="orange", opacity=0.1, line_width=0)
+        fig.add_hrect(y0=0, y1=20, fillcolor="red", opacity=0.1, line_width=0)
+        fig.update_layout(title='Per Base Sequence Quality (Interactive)',
+                         xaxis_title='Позиция в прочтении (bp)',
+                         yaxis_title='Phred качество',
+                         yaxis=dict(range=[0, 42]),
+                         template='plotly_white', height=600)
+        output_path = os.path.join(self.graphs_dir, 'per_base_quality_plotly.html')
+        fig.write_html(output_path)
+        print(f"Интерактивный график сохранен: {output_path}")
 
     def plot_per_base_content(self):
-        # 4.4 Per Base Sequence Content
+        # Per Base Sequence Content
         content = self.calculate_per_base_content()
         if not content['A']:
-            print("Нет данных"); return
-        pos = list(range(1,len(content['A'])+1))
-        fig, ax = plt.subplots(figsize=(14,6))
-        ax.plot(pos, content['A'], label='%A', color='green')
-        ax.plot(pos, content['C'], label='%C', color='blue')
-        ax.plot(pos, content['G'], label='%G', color='black')
-        ax.plot(pos, content['T'], label='%T', color='red')
-        ax.set_xlabel('Position (bp)'); ax.set_ylabel('Percent (%)'); ax.set_ylim(0,100)
-        ax.set_title('Per Base Sequence Content'); ax.legend(); ax.grid(alpha=0.3)
+            print("Нет данных для графика")
+            return
+        positions = list(range(1, len(content['A']) + 1))
+        fig, ax = plt.subplots(figsize=(14, 6))
+        ax.plot(positions, content['A'], label='% A', color='green', linewidth=1.5)
+        ax.plot(positions, content['C'], label='% C', color='blue', linewidth=1.5)
+        ax.plot(positions, content['G'], label='% G', color='black', linewidth=1.5)
+        ax.plot(positions, content['T'], label='% T', color='red', linewidth=1.5)
+        ax.set_xlabel('Позиция в прочтении (bp)', fontsize=12)
+        ax.set_ylabel('Процент (%)', fontsize=12)
+        ax.set_title('Per Base Sequence Content', fontsize=14, fontweight='bold')
+        ax.set_ylim(0, 100)
+        ax.legend()
+        ax.grid(True, alpha=0.3)
         plt.tight_layout()
-        path = os.path.join(self.graphs_dir,'per_base_content.png')
-        plt.savefig(path,dpi=300); plt.close(); print(f"Saved: {path}")
+        output_path = os.path.join(self.graphs_dir, 'per_base_content.png')
+        plt.savefig(output_path, dpi=300)
+        plt.close()
+        print(f"График сохранен: {output_path}")
 
     def plot_sequence_length_distribution(self):
-        # 4.5 Sequence Length Distribution
-        dist = self.get_sequence_length_distribution()
-        if not dist:
-            print("Нет данных"); return
-        L = sorted(dist.keys()); C = [dist[i] for i in L]
-        fig, ax = plt.subplots(figsize=(12,6))
-        ax.bar(L, C, color='steelblue',edgecolor='black',alpha=0.7)
-        ax.set_xlabel('Length (bp)'); ax.set_ylabel('Count')
-        ax.set_title('Sequence Length Distribution'); ax.grid(axis='y',alpha=0.3)
+        # Sequence Length Distribution
+        length_dist = self.get_sequence_length_distribution()
+        if not length_dist:
+            print("Нет данных для графика")
+            return
+        lengths = sorted(length_dist.keys())
+        counts = [length_dist[l] for l in lengths]
+        fig, ax = plt.subplots(figsize=(12, 6))
+        ax.bar(lengths, counts, color='steelblue', edgecolor='black', alpha=0.7)
+        ax.set_xlabel('Длина последовательности (bp)', fontsize=12)
+        ax.set_ylabel('Количество', fontsize=12)
+        ax.set_title('Sequence Length Distribution', fontsize=14, fontweight='bold')
+        ax.grid(True, alpha=0.3, axis='y')
         plt.tight_layout()
-        path = os.path.join(self.graphs_dir,'sequence_length_distribution.png')
-        plt.savefig(path,dpi=300); plt.close(); print(f"Saved: {path}")
+        output_path = os.path.join(self.graphs_dir, 'sequence_length_distribution.png')
+        plt.savefig(output_path, dpi=300)
+        plt.close()
+        print(f"График сохранен: {output_path}")
 
-# 5. ЗАПУСК
+# 4. ЗАПУСК
 
 if __name__ == "__main__":
     print("Демоверсия анализа FASTQ файлов")
-    FASTQ_FILE = "demo/test_data_SRR35776190.fastq"
+    FASTQ_FILE = input("Введите полный путь к FASTQ файлу: ").strip().strip('"').strip("'")
     if not os.path.isfile(FASTQ_FILE):
-        print(f"ERROR: not found {FASTQ_FILE}")
+        print(f"\nОШИБКА: Файл не найден: {FASTQ_FILE}")
         exit(1)
     graphs_dir = os.path.join(os.path.dirname(os.path.abspath(FASTQ_FILE)), "graphs")
     if not os.path.exists(graphs_dir):
         os.makedirs(graphs_dir)
-        print(f"Created graphs dir: {graphs_dir}")
+        print(f"\nСоздана папка для графиков: {graphs_dir}")
     analyzer = FastqAnalyzer(FASTQ_FILE, graphs_dir)
-    print(f"Count: {analyzer.get_sequence_count()}")
-    print(f"Avg length: {analyzer.get_average_sequence_length():.2f} bp")
+    print(f"\nВычисление базовой статистики...")
+    print(f"  Количество последовательностей: {analyzer.get_sequence_count()}")
+    print(f"  Средняя длина последовательности: {analyzer.get_average_sequence_length():.2f} bp")
+    print("\nГенерация графиков...")
     analyzer.plot_per_base_quality_matplotlib()
     analyzer.plot_per_base_quality_seaborn()
     analyzer.plot_per_base_quality_plotly()
     analyzer.plot_per_base_content()
     analyzer.plot_sequence_length_distribution()
-    print("Demo complete")
+    print(f"\nАнализ завершен!\nВсе графики сохранены в папке: {graphs_dir}")
