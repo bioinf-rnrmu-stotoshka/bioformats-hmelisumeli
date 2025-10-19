@@ -286,12 +286,5 @@ if __name__ == "__main__":
     analyzer.plot_per_base_quality_plotly()
     analyzer.plot_per_base_content()
     analyzer.plot_sequence_length_distribution()
-    print(f"\nАнализ завершен!\nВсе графики сохранены в папке: {graphs_dir}")import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import plotly.graph_objects as go
-from typing import Iterator, List, Dict
-import gzip
-import os
-from collections import defaultdict
+    print(f"\nАнализ завершен!\nВсе графики сохранены в папке: {graphs_dir}")
 
