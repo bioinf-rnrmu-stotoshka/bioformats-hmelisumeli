@@ -1,0 +1,22 @@
+# Sphinx build
+docs/docs_sphinx/_build/
+docs/docs_sphinx/.doctrees
+docs/docs_sphinx/.buildinfo
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# (если используете виртуальное окружение)
+venv/
+.env/
