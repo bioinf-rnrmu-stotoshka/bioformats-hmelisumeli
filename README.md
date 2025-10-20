@@ -81,7 +81,7 @@ pip install numpy matplotlib seaborn plotly pandas
 ### Просмотр онлайн
 
 Актуальная документация доступна по ссылке:  
-**[https://bioinf-nrmu-stotoshka.github.io/bioformats-hmelisumeli/](https://bioinf-nrmu-stotoshka.github.io/bioformats-hmelisumeli/)**
+**[https://bioinf-rnrmu-stotoshka.github.io/bioformats-hmelisumeli/)**
 
 Документация с описанием работы скриптов открывается прямо в браузере, ничего устанавливать не нужно.
 
