@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sam_reader module &mdash; документация Infa_project 0.1</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=490fdf2e"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=5b699b7f"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="genindex.html" />
+    <link rel="search" title="Поиск" href="search.html" />
+    <link rel="next" title="vcf_reader3 module" href="vcf_reader3.html" />
+    <link rel="prev" title="fastq_reader module" href="fastq_reader.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Infa_project
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Поиск в документации" aria-label="Поиск в документации" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Меню навигации">
+              <p class="caption" role="heading"><span class="caption-text">Содержание</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Модули</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="fastq_reader.html">fastq_reader module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">sam_reader module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sam_reader.SAMfile"><code class="docutils literal notranslate"><span class="pre">SAMfile</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sam_reader.SAMfile.calculate_alignment_end"><code class="docutils literal notranslate"><span class="pre">SAMfile.calculate_alignment_end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sam_reader.SAMfile.count_alignments"><code class="docutils literal notranslate"><span class="pre">SAMfile.count_alignments()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sam_reader.SAMfile.find_alignments_in_region"><code class="docutils literal notranslate"><span class="pre">SAMfile.find_alignments_in_region()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sam_reader.SAMfile.get_chromosome_stats"><code class="docutils literal notranslate"><span class="pre">SAMfile.get_chromosome_stats()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sam_reader.SAMfile.get_header_groups"><code class="docutils literal notranslate"><span class="pre">SAMfile.get_header_groups()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sam_reader.SAMfile.parse_sam_file"><code class="docutils literal notranslate"><span class="pre">SAMfile.parse_sam_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sam_reader.SAMfile.print_headers"><code class="docutils literal notranslate"><span class="pre">SAMfile.print_headers()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="vcf_reader3.html">vcf_reader3 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fastacounterF.html">fastacounterF module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Меню навигации для мобильных устройств" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Infa_project</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Навигация по страницам">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Модули</a></li>
+      <li class="breadcrumb-item active">sam_reader module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/sam_reader.rst.txt" rel="nofollow"> Просмотреть исходный код страницы</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-sam_reader">
+<span id="sam-reader-module"></span><h1>sam_reader module<a class="headerlink" href="#module-sam_reader" title="Ссылка на этот заголовок"></a></h1>
+<p>Модуль для анализа SAM файлов - формата хранения выравниваний последовательностей.
+Предоставляет функциональность для чтения, парсинга и статистического анализа
+данных выравнивания в SAM формате.</p>
+<p>Основные компоненты:
+- Класс SAMfile: основной класс для работы с SAM файлами
+- Методы для анализа заголовков и выравниваний
+- Функции для статистики по хромосомам и регионам</p>
+<p>Входные данные: SAM файлы (.sam)
+Выходные данные: статистика, таблицы с данными выравниваний</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sam_reader.SAMfile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sam_reader.</span></span><span class="sig-name descname"><span class="pre">SAMfile</span></span><a class="reference internal" href="_modules/sam_reader.html#SAMfile"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#sam_reader.SAMfile" title="Ссылка на это определение"></a></dt>
+<dd><p>Базовые классы: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<section id="samfile-sam">
+<h2>КЛАСС SAMFILE - АНАЛИЗ SAM ФАЙЛОВ<a class="headerlink" href="#samfile-sam" title="Ссылка на этот заголовок"></a></h2>
+<p>Основной класс для работы с SAM файлами формата.</p>
+<p>Логика работы класса:
+- Чтение и разделение SAM файла на заголовки и выравнивания
+- Статистический анализ распределения выравниваний
+- Поиск выравниваний в специфичных геномных регионах</p>
+<p>Атрибуты: не требуют явной инициализации, используются внутренние переменные методов</p>
+<p>Методы:
+- parse_sam_file: разделение файла на заголовки и выравнивания
+- get_header_groups: группировка заголовков по типам
+- print_headers: вывод информации о заголовках
+- count_alignments: подсчет количества выравниваний
+- get_chromosome_stats: статистика по хромосомам
+- calculate_alignment_end: вычисление конечной позиции выравнивания
+- find_alignments_in_region: поиск выравниваний в заданном регионе</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sam_reader.SAMfile.calculate_alignment_end">
+<span class="sig-name descname"><span class="pre">calculate_alignment_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cigar</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sam_reader.html#SAMfile.calculate_alignment_end"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#sam_reader.SAMfile.calculate_alignment_end" title="Ссылка на это определение"></a></dt>
+<dd><section id="id1">
+<h3>ВЫЧИСЛЕНИЕ КОНЕЧНОЙ ПОЗИЦИИ ВЫРАВНИВАНИЯ<a class="headerlink" href="#id1" title="Ссылка на этот заголовок"></a></h3>
+<p>Вычисляет конечную позицию выравнивания на основе CIGAR строки.</p>
+<p>Логика работы:
+1. Анализирует CIGAR строку посимвольно
+2. Суммирует длины операций, которые consume референс (M, D, N, =, X)
+3. Игнорирует операции, которые не двигают позицию на референсе (I, S, H, P)</p>
+<p>Входные данные:
+- position: начальная позиция выравнивания (1-based)
+- cigar: CIGAR строка (например, «50M», «10M1I40M»)</p>
+<p>Выходные данные:
+- int: конечная позиция выравнивания (1-based)</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sam_reader.SAMfile.count_alignments">
+<span class="sig-name descname"><span class="pre">count_alignments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alignments</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sam_reader.html#SAMfile.count_alignments"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#sam_reader.SAMfile.count_alignments" title="Ссылка на это определение"></a></dt>
+<dd><section id="id2">
+<h3>ПОДСЧЕТ КОЛИЧЕСТВА ВЫРАВНИВАНИЙ<a class="headerlink" href="#id2" title="Ссылка на этот заголовок"></a></h3>
+<p>Считаем общее количество выравниваний в SAM файле.</p>
+<p>Логика работы:
+- Простой подсчет элементов в списке выравниваний</p>
+<p>Входные данные:
+- alignments: список строк выравниваний</p>
+<p>Выходные данные:
+- int: количество выравниваний</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sam_reader.SAMfile.find_alignments_in_region">
+<span class="sig-name descname"><span class="pre">find_alignments_in_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alignments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chromosome</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sam_reader.html#SAMfile.find_alignments_in_region"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#sam_reader.SAMfile.find_alignments_in_region" title="Ссылка на это определение"></a></dt>
+<dd><section id="id3">
+<h3>ПОИСК ВЫРАВНИВАНИЙ В ГЕНОМНОМ РЕГИОНЕ<a class="headerlink" href="#id3" title="Ссылка на этот заголовок"></a></h3>
+<p>Находим выравнивания в заданном геномном регионе.</p>
+<p>Логика работы:
+1. Для каждого выравнивания проверяет принадлежность к целевой хромосоме
+2. Вычисляет конечную позицию выравнивания через CIGAR парсинг
+3. Проверяет пересечение с заданным регионом [start, end]
+4. Собирает информацию о подходящих выравниваниях</p>
+<p>Входные данные:
+- alignments: список строк выравниваний
+- chromosome: целевая хромосома
+- start: начальная позиция региона
+- end: конечная позиция региона</p>
+<p>Выходные данные:
+- DataFrame с колонками: Название, Хромосома, Начало, Конец, CIGAR</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sam_reader.SAMfile.get_chromosome_stats">
+<span class="sig-name descname"><span class="pre">get_chromosome_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alignments</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sam_reader.html#SAMfile.get_chromosome_stats"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#sam_reader.SAMfile.get_chromosome_stats" title="Ссылка на это определение"></a></dt>
+<dd><section id="id4">
+<h3>СТАТИСТИКА ПО ХРОМОСОМАМ<a class="headerlink" href="#id4" title="Ссылка на этот заголовок"></a></h3>
+<p>Анализирует распределение выравниваний по хромосомам.</p>
+<p>Логика работы:
+1. Извлекает информацию о хромосоме и позиции для каждого выравнивания
+2. Вычисляет минимальную и максимальную позицию для каждой хромосомы
+3. Создает DataFrame с подсчетом выравниваний по хромосомам</p>
+<p>Входные данные:
+- alignments: список строк выравниваний</p>
+<p>Выходные данные:
+- DataFrame с колонками: Хромосома, Количество, Мин_позиция, Макс_позиция</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sam_reader.SAMfile.get_header_groups">
+<span class="sig-name descname"><span class="pre">get_header_groups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">headers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sam_reader.html#SAMfile.get_header_groups"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#sam_reader.SAMfile.get_header_groups" title="Ссылка на это определение"></a></dt>
+<dd><section id="id5">
+<h3>ГРУППИРОВКА ЗАГОЛОВКОВ ПО ТИПАМ<a class="headerlink" href="#id5" title="Ссылка на этот заголовок"></a></h3>
+<p>Группируем заголовки по типам (&#64;HD, &#64;SQ, &#64;RG, &#64;PG).</p>
+<p>Логика работы:
+1. Для каждого заголовка определяет тип по первому полю (до первой табуляции)
+2. Создает словарь с ключами - типами заголовков
+3. Добавляет заголовки в соответствующие группы</p>
+<p>Входные данные:
+- headers: список строк заголовков</p>
+<p>Выходные данные:
+- groups: словарь {тип_заголовка: [список_заголовков]}</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sam_reader.SAMfile.parse_sam_file">
+<span class="sig-name descname"><span class="pre">parse_sam_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sam_reader.html#SAMfile.parse_sam_file"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#sam_reader.SAMfile.parse_sam_file" title="Ссылка на это определение"></a></dt>
+<dd><section id="sam">
+<h3>ПАРСИНГ SAM ФАЙЛА<a class="headerlink" href="#sam" title="Ссылка на этот заголовок"></a></h3>
+<p>Читаем файл и разделяем на заголовки и выравнивания.</p>
+<p>Логика работы:
+1. Открывает файл в текстовом режиме
+2. Итерируется по всем строкам файла
+3. Разделяет строки на заголовки (начинающиеся с „&#64;“) и выравнивания
+4. Игнорирует пустые строки</p>
+<p>Входные данные:
+- filename: строка, путь к SAM файлу</p>
+<p>Выходные данные:
+- headers: список строк заголовков
+- alignments: список строк выравниваний</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sam_reader.SAMfile.print_headers">
+<span class="sig-name descname"><span class="pre">print_headers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">headers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sam_reader.html#SAMfile.print_headers"><span class="viewcode-link"><span class="pre">[исходный</span> <span class="pre">код]</span></span></a><a class="headerlink" href="#sam_reader.SAMfile.print_headers" title="Ссылка на это определение"></a></dt>
+<dd><section id="id6">
+<h3>ВЫВОД ИНФОРМАЦИИ О ЗАГОЛОВКАХ<a class="headerlink" href="#id6" title="Ссылка на этот заголовок"></a></h3>
+<p>Выводит структурированную информацию о заголовках SAM файла.</p>
+<p>Логика работы:
+1. Группирует заголовки по типам
+2. Для каждого типа выводит количество записей
+3. Отображает содержимое каждого заголовка</p>
+<p>Входные данные:
+- headers: список строк заголовков</p>
+<p>Выходные данные:
+- Текстовый вывод в консоль с форматированием</p>
+</section>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Нижняя область">
+        <a href="fastq_reader.html" class="btn btn-neutral float-left" title="fastq_reader module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Предыдущая</a>
+        <a href="vcf_reader3.html" class="btn btn-neutral float-right" title="vcf_reader3 module" accesskey="n" rel="next">Следующая <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Авторские права 2025, Anastas. </p>
+  </div>
+
+  Собрано при помощи <a href="https://www.sphinx-doc.org/">Sphinx</a> с использованием
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">темы,</a>
+    предоставленной <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

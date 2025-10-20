@@ -1,0 +1,7 @@
+fastacounterF module
+====================
+
+.. automodule:: fastacounterF
+   :members:
+   :undoc-members:
+   :show-inheritance:
