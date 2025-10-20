@@ -1,7 +1,0 @@
-fastq_reader module
-===================
-
-.. automodule:: fastq_reader
-   :members:
-   :undoc-members:
-   :show-inheritance:
