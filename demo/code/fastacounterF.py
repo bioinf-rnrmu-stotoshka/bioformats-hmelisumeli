@@ -55,3 +55,4 @@ class FastaAnalyzer:
     #print(f"Количество последовательностей: {sequence_count}")
     #print(f"Средняя длина последовательности: {average_length:.2f}")
 
+
