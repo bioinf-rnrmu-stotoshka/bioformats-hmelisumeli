@@ -75,4 +75,4 @@ pip install numpy matplotlib seaborn plotly pandas
    ```bash
    python demo/main.py path/to/your/file
    ```
-4. Для ознакомления с документацией откройте `docs/_build/html/modules.html` в браузере.
+4. Для ознакомления с документацией откройте `docs\docs_sphinx\build\html\modules.html"` в браузере.
