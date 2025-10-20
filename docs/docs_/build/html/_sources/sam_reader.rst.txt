@@ -1,0 +1,7 @@
+sam_reader module
+=================
+
+.. automodule:: sam_reader
+   :members:
+   :undoc-members:
+   :show-inheritance:

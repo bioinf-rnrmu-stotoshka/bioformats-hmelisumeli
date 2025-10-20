@@ -1,0 +1,12 @@
+Модули
+======
+
+Здесь перечислены все основные модули проекта.
+
+.. toctree::
+   :maxdepth: 1
+
+   fastq_reader
+   sam_reader
+   vcf_reader3
+   fastacounterF
