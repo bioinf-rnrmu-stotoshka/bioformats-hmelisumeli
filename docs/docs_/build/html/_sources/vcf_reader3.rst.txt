@@ -1,7 +1,0 @@
-vcf_reader3 module
-==================
-
-.. automodule:: vcf_reader3
-   :members:
-   :undoc-members:
-   :show-inheritance:
