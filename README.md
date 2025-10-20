@@ -75,4 +75,40 @@ pip install numpy matplotlib seaborn plotly pandas
    ```bash
    python demo/main.py path/to/your/file
    ```
-4. Для ознакомления с документацией откройте `docs\docs_sphinx\build\html\modules.html"` в браузере.
+
+## Документация
+
+### Просмотр онлайн
+
+Актуальная документация доступна по ссылке:  
+**[https://bioinf-nrmu-stotoshka.github.io/bioformats-hmelisumeli/](https://bioinf-nrmu-stotoshka.github.io/bioformats-hmelisumeli/)**
+
+Документация с описанием работы скриптов открывается прямо в браузере, ничего устанавливать не нужно.
+
+---
+
+### Сборка документации локально
+
+Если вы хотите собрать документацию на своём компьютере (например, для разработки или офлайн-просмотра):
+
+1. Установите Sphinx:
+   ```bash
+   pip install sphinx
+   ```
+
+2. Перейдите в папку с документацией:
+   ```bash
+   cd docs_sphinx
+   ```
+
+3. Соберите HTML:
+   ```bash
+   make html
+   ```
+
+4. Откройте файл документации в браузере:
+   ```bash
+   open _build/html/index.html
+   ```
+
+После этого вы сможете просматривать документацию локально, без подключения к интернету.
