@@ -1,22 +1,38 @@
-# Sphinx build
+# Sphinx build - игнорируем всю папку _build
 docs/docs_sphinx/_build/
+docs/docs_sphinx/_build/*
+
+# Sphinx временные файлы
 docs/docs_sphinx/.doctrees
 docs/docs_sphinx/.buildinfo
+
+# Дополнительно - все HTML файлы в папке документации
+docs/docs_sphinx/**/*.html
+docs/docs_sphinx/**/_static/
+docs/docs_sphinx/**/_sources/
+docs/docs_sphinx/**/_modules/
 
 # Python
 *.pyc
 __pycache__/
 *.pyo
 *.pyd
+*.so
 
 # IDE
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
+*.tmp
 
-# (если используете виртуальное окружение)
+# Виртуальное окружение
 venv/
+env/
 .env/
+ENV/
